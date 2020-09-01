@@ -1,24 +1,32 @@
-package apibuilder.config
+package io.apibuilder.commons.config
 
 import cats.data.ValidatedNec
 import cats.implicits._
 
-object ConfigParser {
-
-  val DefaultApiUri = "https://api.apibuilder.io"
+private[config] object ConfigParser {
 
   def parse(value: String): ValidatedNec[String, Config] = {
     ConfigParser().parse(value).toList match {
       case Nil => "No Api Builder Profiles found".invalidNec
-      case profiles => Config(profiles).validNec
+      case profiles => validateProfiles(profiles).map { p =>
+        Config(p)
+      }
     }
   }
+
+  private[this] def validateProfiles(profiles: List[Profile]): ValidatedNec[String, List[Profile]] = {
+    profiles.groupBy(_.name).filter(_._2.size > 1).keys.toList match {
+      case Nil => profiles.validNec
+      case multiple => s"Profile names must be unique. Found duplicates: ${multiple.mkString(", ")}".invalidNec
+    }
+  }
+
 }
 
 /**
  * Reads the API Builder Config
  */
-case class ConfigParser() {
+private[config] case class ConfigParser() {
 
   private[this] val profiles = scala.collection.mutable.ListBuffer[Profile]()
 
@@ -49,11 +57,20 @@ case class ConfigParser() {
     if (name.nonEmpty) {
       profiles.append(
         Profile(
-          name = name,
-          apiUri = keyValues.getOrElse("apiUri", ConfigParser.DefaultApiUri),
+          name = stripProfilePrefix(name),
+          apiUri = keyValues.getOrElse("apiUri", Config.Defaults.ApiUri),
           token = keyValues.get("token"),
         )
       )
+    }
+  }
+
+  private[this] val Prefix = "profile"
+  private[this] def stripProfilePrefix(name: String): String = {
+    if (name.startsWith(Prefix)) {
+      name.drop(Prefix.length).trim
+    } else {
+      name
     }
   }
 
@@ -79,6 +96,9 @@ case class ConfigParser() {
         key += c
       } else if (captureValue) {
         value += c
+        if (key.trim.nonEmpty && value.trim.nonEmpty) {
+          keyValues.addOne(key.trim -> value.trim)
+        }
       } else {
         sys.error(s"Unexpected character '$c' while parsing config")
       }
