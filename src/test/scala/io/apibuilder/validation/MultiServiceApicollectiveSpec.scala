@@ -1,0 +1,25 @@
+package io.apibuilder.commons.validation
+
+import io.apibuilder.commons.validation.helpers.Helpers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+import play.api.libs.json.Json
+
+class MultiServiceApicollectiveSpec extends AnyFunSpec with Matchers with Helpers {
+
+  it("validates imported enums") {
+    apibuilderMultiService.upcastOperationBody(
+      "POST",
+      "/people",
+      Json.obj(
+        "name" -> "Joe",
+        "gender" -> ""
+      )
+    ) should equal(
+      Left(
+        Seq("person_form.gender invalid value ''. Valid values for the enum 'gender' are: 'male', 'female'")
+      )
+    )
+  }
+
+}

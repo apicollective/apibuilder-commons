@@ -1,6 +1,5 @@
 package io.apibuilder.commons.types
 
-import io.apibuilder.commons.ApiBuilderService
 import io.apibuilder.spec.v0.models
 
 sealed trait TypeDiscriminator
