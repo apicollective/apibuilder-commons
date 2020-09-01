@@ -1,18 +1,20 @@
 package io.apibuilder.commons.validation
 
-import java.security.Provider.Service
-
-import io.apibuilder.commons.config.{Config, Profile}
+import akka.actor.ActorSystem
+import akka.stream.SystemMaterializer
+import io.apibuilder.commons.config.Profile
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits._
-import play.api.libs.json.{JsArray, JsBoolean, JsValue, Json}
+import play.api.libs.json.{JsArray, JsBoolean, Json}
+import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 import play.api.libs.ws.WSAuthScheme
 import play.shaded.ahc.org.asynchttpclient.{DefaultAsyncHttpClient, DefaultAsyncHttpClientConfig}
+import play.api.libs.ws.DefaultBodyWritables._
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
 object Validator {
@@ -22,6 +24,13 @@ object Validator {
   }
 
   def defaultClient(): StandaloneAhcWSClient = {
+    // Create Akka system for thread and streaming management
+    implicit val system = ActorSystem()
+    system.registerOnTermination {
+      System.exit(0)
+    }
+
+    implicit val materializer = SystemMaterializer(system).materializer
     val asyncHttpClientConfig = new DefaultAsyncHttpClientConfig.Builder()
       .setMaxRequestRetry(0)
       .setShutdownQuietPeriod(0)
@@ -37,14 +46,18 @@ object Validator {
  */
 case class Validator(wsClient: StandaloneAhcWSClient) {
 
-  def mustValidate(profile: Profile, service: Service): Unit = {
+  def mustValidate(profile: Profile, service: Service)(
+    implicit ec: ExecutionContext
+  ): Future[Unit] = {
     validate(profile, service).map {
       case Valid(_) => ()
       case Invalid(errors) => sys.error("Validation Failed:" + errors.toNonEmptyList.toList.mkString("\n -)"))
     }
   }
 
-  def validate(profile: Profile, service: Service): Future[ValidatedNec[String, Unit]] = {
+  def validate(profile: Profile, service: Service)(
+    implicit ec: ExecutionContext
+  ): Future[ValidatedNec[String, Unit]] = {
     val url = profile.apiUri + "/validations"
     val js = Json.prettyPrint(Json.toJson(service))
     val request = wsClient
@@ -58,7 +71,7 @@ case class Validator(wsClient: StandaloneAhcWSClient) {
       r.withAuth("", t, WSAuthScheme.BASIC)
     }.post(js).map { r =>
       r.status match {
-        case 200 | 422 => parseResult(js, r.body)
+        case 200 | 422 => parseResult(r.body)
         case n => {
           s"API Call failed with unexpected status code: $n".invalidNec
         }
@@ -66,7 +79,7 @@ case class Validator(wsClient: StandaloneAhcWSClient) {
     }
   }
 
-  private[this] def parseResult(requestBody: String, body: String): ValidatedNec[String, Unit] = {
+  private[this] def parseResult(body: String): ValidatedNec[String, Unit] = {
     val js = Json.parse(body)
     if ((js \ "valid").asOpt[JsBoolean].map(_.value).getOrElse(false)) {
       ().validNec
