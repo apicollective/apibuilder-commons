@@ -8,6 +8,8 @@ lazy val root = project
   .in(file("."))
   .settings(
     libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-ahc-ws-standalone" % "2.1.2",
+      "com.typesafe.play" %% "play-ws-standalone-json" % "2.1.2",
       "org.typelevel" %% "cats-core" % "2.1.1",
       "org.scalatest" %% "scalatest" % "3.2.1" % Test,
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.7.0" cross CrossVersion.full),
