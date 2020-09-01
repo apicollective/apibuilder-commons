@@ -10,8 +10,8 @@ lazy val root = project
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "2.1.1",
       "org.scalatest" %% "scalatest" % "3.2.1" % Test,
-      compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.6.0" cross CrossVersion.full),
-      "com.github.ghik" %% "silencer-lib" % "1.6.0" % Provided cross CrossVersion.full,
+      compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.7.0" cross CrossVersion.full),
+      "com.github.ghik" %% "silencer-lib" % "1.7.0" % Provided cross CrossVersion.full,
     ),
     credentials += Credentials(
       "Artifactory Realm",
