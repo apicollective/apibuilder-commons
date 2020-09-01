@@ -1,7 +1,7 @@
 package io.apibuilder.commons.validation
 
 import akka.actor.ActorSystem
-import akka.stream.SystemMaterializer
+import akka.stream.{Materializer, SystemMaterializer}
 import io.apibuilder.commons.config.Profile
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
@@ -23,20 +23,24 @@ object Validator {
     Validator(defaultClient())
   }
 
-  def defaultClient(): StandaloneAhcWSClient = {
+  def defaultClient(materializer: Materializer = defaultMaterializer()): StandaloneAhcWSClient = {
+    new StandaloneAhcWSClient(
+      new DefaultAsyncHttpClient(
+        new DefaultAsyncHttpClientConfig.Builder()
+          .setMaxRequestRetry(0)
+          .setShutdownQuietPeriod(0)
+          .setShutdownTimeout(0).build
+      )
+    )(materializer)
+  }
+
+  def defaultMaterializer(): Materializer = {
     // Create Akka system for thread and streaming management
-    implicit val system = ActorSystem()
+    val system = ActorSystem()
     system.registerOnTermination {
       System.exit(0)
     }
-
-    implicit val materializer = SystemMaterializer(system).materializer
-    val asyncHttpClientConfig = new DefaultAsyncHttpClientConfig.Builder()
-      .setMaxRequestRetry(0)
-      .setShutdownQuietPeriod(0)
-      .setShutdownTimeout(0).build
-    val asyncHttpClient = new DefaultAsyncHttpClient(asyncHttpClientConfig)
-    new StandaloneAhcWSClient(asyncHttpClient)
+    SystemMaterializer(system).materializer
   }
 }
 
@@ -81,7 +85,7 @@ case class Validator(wsClient: StandaloneAhcWSClient) {
 
   private[this] def parseResult(body: String): ValidatedNec[String, Unit] = {
     val js = Json.parse(body)
-    if ((js \ "valid").asOpt[JsBoolean].map(_.value).getOrElse(false)) {
+    if ((js \ "valid").asOpt[JsBoolean].exists(_.value)) {
       ().validNec
     } else {
       (js \ "errors").as[JsArray].value.map(_.toString).mkString(", ").invalidNec
