@@ -6,7 +6,7 @@ General scala utilities for interacting with Api Builder
 
 Importing:
 ```
-      "io.apibuilder" %% "apibuilder-commons" % "0.0.1"
+      "io.apibuilder" %% "apibuilder-commons" % "0.0.2"
 ```
 
 ## Configuration
