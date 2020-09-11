@@ -29,7 +29,7 @@ publishTo := {
   if (isSnapshot.value) {
     Some("Artifactory Realm" at s"$host/libs-snapshot-local;build.timestamp=" + new java.util.Date().getTime)
   } else {
-    Some("Artifactory Realm" at s"$host/libs-release")
+    Some("Artifactory Realm" at s"$host/libs-release-local")
   }
 }
 
