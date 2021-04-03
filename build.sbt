@@ -2,7 +2,7 @@ name := "apibuilder-commons"
 
 organization := "io.apibuilder"
 
-scalaVersion in ThisBuild := "2.13.3"
+scalaVersion in ThisBuild := "2.13.5"
 
 lazy val root = project
   .in(file("."))
