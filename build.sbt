@@ -21,7 +21,7 @@ lazy val root = project
   .settings(
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "2.1.1",
-      "org.scalatest" %% "scalatest" % "3.2.7" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.9" % Test,
     ),
     credentials += Credentials(
       "Artifactory Realm",
