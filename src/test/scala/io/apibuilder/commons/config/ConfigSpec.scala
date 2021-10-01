@@ -23,12 +23,14 @@ class ConfigSpec extends AnyWordSpec with Matchers {
 
   "find validation" must {
 
+    def error(msg: String): String = s"$msg [Config source: Explicitly Provided]"
+
     "ensure at least 1 profile" in {
       val builder = ConfigBuilder().withContents("")
       assertInvalid(
         Config.find(builder, "foo")
       ) must equal(
-        Seq("No Api Builder Profiles found")
+        Seq(error("No Api Builder Profiles found"))
       )
     }
 
@@ -37,7 +39,7 @@ class ConfigSpec extends AnyWordSpec with Matchers {
       assertInvalid(
         Config.find(builder, "bar")
       ) must equal(
-        Seq("Cannot find profile with name 'bar'. Available profiles: foo")
+        Seq(error("Cannot find profile with name 'bar'. Available profiles: foo"))
       )
     }
 
@@ -45,7 +47,7 @@ class ConfigSpec extends AnyWordSpec with Matchers {
       assertInvalid(
         ConfigBuilder().withContents("[profile foo]\n[profile foo]").build()
       ) must equal(
-        Seq("Profile names must be unique. Found duplicates: foo")
+        Seq(error("Profile names must be unique. Found duplicates: foo"))
       )
     }
   }
