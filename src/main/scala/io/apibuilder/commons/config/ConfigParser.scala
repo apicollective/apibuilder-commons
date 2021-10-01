@@ -5,20 +5,24 @@ import cats.implicits._
 
 private[config] object ConfigParser {
 
-  def parse(value: String): ValidatedNec[String, Config] = {
+  def parse(source: ConfigSource, value: String): ValidatedNec[String, Config] = {
     ConfigParser().parse(value).toList match {
-      case Nil => "No Api Builder Profiles found".invalidNec
-      case profiles => validateProfiles(profiles).map { p =>
-        Config(p)
+      case Nil => errorMsg(source, "No Api Builder Profiles found").invalidNec
+      case profiles => validateProfiles(source, profiles).map { p =>
+        Config(source, p)
       }
     }
   }
 
-  private[this] def validateProfiles(profiles: List[Profile]): ValidatedNec[String, List[Profile]] = {
+  private[this] def validateProfiles(source: ConfigSource, profiles: List[Profile]): ValidatedNec[String, List[Profile]] = {
     profiles.groupBy(_.name).filter(_._2.size > 1).keys.toList match {
       case Nil => profiles.validNec
-      case multiple => s"Profile names must be unique. Found duplicates: ${multiple.mkString(", ")}".invalidNec
+      case multiple => errorMsg(source, s"Profile names must be unique. Found duplicates: ${multiple.mkString(", ")}").invalidNec
     }
+  }
+
+  private[this] def errorMsg(source: ConfigSource, value: String): String = {
+    s"$value [Config source: ${source.label}]"
   }
 
 }

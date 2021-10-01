@@ -4,7 +4,10 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits._
 
-case class Config(profiles: Seq[Profile]) {
+case class Config(
+  source: ConfigSource,
+  profiles: Seq[Profile],
+) {
   private[this] val byName = profiles.map { p => p.name -> p }.toMap
   def find(name: String): Option[Profile] = byName.get(name)
 }
@@ -41,7 +44,9 @@ object Config {
 
   def find(config: Config, profileName: String): ValidatedNec[String, Profile] = {
     config.find(profileName) match {
-      case None => s"Cannot find profile with name '${profileName}'. Available profiles: ${config.profiles.map(_.name).mkString(", ")}".invalidNec
+      case None => errorMsg(
+        config.source, s"Cannot find profile with name '$profileName'. Available profiles: ${config.profiles.map(_.name).mkString(", ")}"
+      ).invalidNec
       case Some(p) => p.validNec
     }
   }
@@ -64,6 +69,10 @@ object Config {
       case Valid(p) => p
       case Invalid(errors) => sys.error(errors.toNonEmptyList.toList.mkString(", "))
     }
+  }
+
+  private[this] def errorMsg(source: ConfigSource, msg: String): String = {
+    s"$msg [Config source: ${source.label}]"
   }
 }
 
