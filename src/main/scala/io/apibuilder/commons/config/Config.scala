@@ -8,7 +8,7 @@ case class Config(
   source: ConfigSource,
   profiles: Seq[Profile],
 ) {
-  private[this] val byName = profiles.map { p => p.name -> p }.toMap
+  private val byName = profiles.map { p => p.name -> p }.toMap
   def find(name: String): Option[Profile] = byName.get(name)
 }
 
@@ -64,14 +64,14 @@ object Config {
     )
   }
 
-  private[this] def validOrErrors[T](v: ValidatedNec[String, T]): T = {
+  private def validOrErrors[T](v: ValidatedNec[String, T]): T = {
     v match {
       case Valid(p) => p
       case Invalid(errors) => sys.error(errors.toNonEmptyList.toList.mkString(", "))
     }
   }
 
-  private[this] def errorMsg(source: ConfigSource, msg: String): String = {
+  private def errorMsg(source: ConfigSource, msg: String): String = {
     s"$msg [Config source: ${source.label}]"
   }
 }

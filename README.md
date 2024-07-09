@@ -1,12 +1,16 @@
 # apibuilder-commons
 
-General scala utilities for interacting with Api Builder
+General scala utilities for interacting with API Builder
+
+Versions 0.0.x are compatible with scala2
+
+Version 0.1.x and greater compatible with scala3
 
 ##
 
 Importing:
 ```
-      "io.apibuilder" %% "apibuilder-commons" % "0.0.2"
+      "io.apibuilder" %% "apibuilder-commons" % "0.1.0"
 ```
 
 ## Configuration

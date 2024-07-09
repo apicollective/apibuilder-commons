@@ -39,7 +39,7 @@ case class ConfigBuilder(
     }
   }
 
-  private[this] def validateContents(): ValidatedNec[String, ConfigSourceWrapper] = {
+  private def validateContents(): ValidatedNec[String, ConfigSourceWrapper] = {
     (path, contents) match {
       case (Some(_), Some(_)) => "Cannot specify both a config path and config contents".invalidNec
       case (Some(p), None) => validatePath(p)
@@ -51,7 +51,7 @@ case class ConfigBuilder(
     }
   }
 
-  private[this] def validatePath(path: String): ValidatedNec[String, ConfigSourceWrapper] = {
+  private def validatePath(path: String): ValidatedNec[String, ConfigSourceWrapper] = {
     val file = new File(expandPath(path))
     if (file.isFile) {
       val source = scala.io.Source.fromFile(file)
@@ -68,7 +68,7 @@ case class ConfigBuilder(
     }
   }
 
-  private[this] def expandPath(path: String): String = {
+  private def expandPath(path: String): String = {
     if (path.startsWith("~" + File.separator)) {
       System.getProperty("user.home") + path.substring(1)
     } else {

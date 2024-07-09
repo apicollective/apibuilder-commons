@@ -14,14 +14,14 @@ private[config] object ConfigParser {
     }
   }
 
-  private[this] def validateProfiles(source: ConfigSource, profiles: List[Profile]): ValidatedNec[String, List[Profile]] = {
+  private def validateProfiles(source: ConfigSource, profiles: List[Profile]): ValidatedNec[String, List[Profile]] = {
     profiles.groupBy(_.name).filter(_._2.size > 1).keys.toList match {
       case Nil => profiles.validNec
       case multiple => errorMsg(source, s"Profile names must be unique. Found duplicates: ${multiple.mkString(", ")}").invalidNec
     }
   }
 
-  private[this] def errorMsg(source: ConfigSource, value: String): String = {
+  private def errorMsg(source: ConfigSource, value: String): String = {
     s"$value [Config source: ${source.label}]"
   }
 
@@ -32,18 +32,18 @@ private[config] object ConfigParser {
  */
 private[config] case class ConfigParser() {
 
-  private[this] val profiles = scala.collection.mutable.ListBuffer[Profile]()
+  private val profiles = scala.collection.mutable.ListBuffer[Profile]()
 
-  private[this] var captureName = false
-  private[this] var captureKey = false
-  private[this] var captureValue = false
+  private var captureName = false
+  private var captureKey = false
+  private var captureValue = false
 
-  private[this] val keyValues = scala.collection.mutable.Map[String, String]()
-  private[this] var name = ""
-  private[this] var key = ""
-  private[this] var value = ""
+  private val keyValues = scala.collection.mutable.Map[String, String]()
+  private var name = ""
+  private var key = ""
+  private var value = ""
 
-  private[this] def reset(): Unit = {
+  private def reset(): Unit = {
     keyValues.clear()
     clearCaptures()
     name = ""
@@ -51,13 +51,13 @@ private[config] case class ConfigParser() {
     value = ""
   }
 
-  private[this] def clearCaptures(): Unit = {
+  private def clearCaptures(): Unit = {
     captureName = false
     captureKey = false
     captureValue = false
   }
 
-  private[this] def saveProfile(): Unit = {
+  private def saveProfile(): Unit = {
     if (name.nonEmpty) {
       profiles.append(
         Profile(
@@ -69,8 +69,8 @@ private[config] case class ConfigParser() {
     }
   }
 
-  private[this] val Prefix = "profile"
-  private[this] def stripProfilePrefix(name: String): String = {
+  private val Prefix = "profile"
+  private def stripProfilePrefix(name: String): String = {
     if (name.startsWith(Prefix)) {
       name.drop(Prefix.length).trim
     } else {

@@ -7,14 +7,14 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class ConfigSpec extends AnyWordSpec with Matchers {
 
-  private[this] def assertInvalid(value: ValidatedNec[String, _]): Seq[String] = {
+  private def assertInvalid[T](value: ValidatedNec[String, T]): Seq[String] = {
     value match {
       case Valid(_) => sys.error("Expected invalid")
       case Invalid(errors) => errors.toNonEmptyList.toList
     }
   }
 
-  private[this] def assertValid[T](value: ValidatedNec[String, T]): T = {
+  private def assertValid[T](value: ValidatedNec[String, T]): T = {
     value match {
       case Valid(r) => r
       case Invalid(errors) => sys.error("Unexpected errors: " + errors.toNonEmptyList.toList.mkString(", "))
