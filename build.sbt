@@ -1,4 +1,4 @@
-name := "apibuilder-commons-scala2"
+name := "apibuilder-commons"
 
 organization := "io.apibuilder"
 
