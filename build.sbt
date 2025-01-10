@@ -1,8 +1,12 @@
+lazy val scala2 = "2.13.15"
+lazy val scala3 = "3.4.2"
+lazy val supportedScalaVersions = List(scala2, scala3)
+
 name := "apibuilder-commons"
 
 organization := "io.apibuilder"
 
-ThisBuild / scalaVersion := "3.4.2"
+ThisBuild / scalaVersion := scala3
 
 lazy val allScalacOptions = Seq(
   "-feature",
@@ -18,4 +22,5 @@ lazy val root = project
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
     ),
     scalacOptions ++= allScalacOptions,
+    crossScalaVersions := supportedScalaVersions,
   )
